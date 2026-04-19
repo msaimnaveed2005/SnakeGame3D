@@ -4,7 +4,7 @@ using namespace std;
 
 int main()
 {
-    InitWindow(2000, 1000, "3D Snake OOP");
+    InitWindow(1000, 700, "3D Snake OOP");
     SetTargetFPS(60);
 
     Camera3D camera = { 0 };
@@ -17,12 +17,14 @@ int main()
     float cubeX = 10.0f;
     float cubeZ = 10.0f;
 
-    int direction = 0; // 0 = no move, 1 = up, 2 = down, 3 = left, 4 = right
+    int direction = 0; // 0 = stop, 1 = up, 2 = down, 3 = left, 4 = right
 
     float moveTimer = 0.0f;
     float moveDelay = 0.2f;
+
     while (!WindowShouldClose())
     {
+        // INPUT
         if (IsKeyPressed(KEY_RIGHT) && direction != 3)
         {
             direction = 4;
@@ -43,6 +45,7 @@ int main()
             direction = 2;
         }
 
+        // MOVEMENT TIMER
         moveTimer = moveTimer + GetFrameTime();
 
         if (moveTimer >= moveDelay)
@@ -54,7 +57,10 @@ int main()
 
             moveTimer = 0.0f;
         }
+
+        // DRAWING
         BeginDrawing();
+        ClearBackground(BLACK);
 
         BeginMode3D(camera);
 
@@ -63,7 +69,7 @@ int main()
 
         EndMode3D();
 
-        DrawText("Arrow keys move the cube", 20, 20, 20, WHITE);
+        DrawText("Snake movement active", 20, 20, 20, WHITE);
 
         EndDrawing();
     }
