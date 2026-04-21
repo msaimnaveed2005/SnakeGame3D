@@ -3,6 +3,29 @@
 #include "Snake.h"
 using namespace std;
 
+void DrawBoard(int boardWidth, int boardHeight)
+{
+    // Draw floor
+    DrawPlane({ 0.0f, 0.0f, 0.0f }, { (float)boardWidth, (float)boardHeight }, DARKGRAY);
+
+    float startX = -boardWidth / 2.0f;
+    float startZ = -boardHeight / 2.0f;
+
+    // Vertical lines
+    for (int i = 0; i <= boardWidth; i++)
+    {
+        float x = startX + i;
+        DrawLine3D({ x, 0.01f, startZ }, { x, 0.01f, startZ + boardHeight }, GRAY);
+    }
+
+    // Horizontal lines
+    for (int i = 0; i <= boardHeight; i++)
+    {
+        float z = startZ + i;
+        DrawLine3D({ startX, 0.01f, z }, { startX + boardWidth, 0.01f, z }, GRAY);
+    }
+}
+
 int main()
 {
     InitWindow(1000, 700, "3D Snake OOP");
@@ -68,8 +91,7 @@ int main()
 
         BeginMode3D(camera);
 
-        DrawPlane({ 0.0f, 0.0f, 0.0f }, { (float)boardWidth, (float)boardHeight }, DARKGRAY);
-        DrawGrid(boardWidth, 1.0f);
+        DrawBoard(boardWidth, boardHeight);
 
         snake.Draw(boardWidth, boardHeight);
 
