@@ -2,7 +2,7 @@
 
 SnakeGame3D is a 3D remake of the classic Snake game developed in **C++** using **raylib**.  
 It combines traditional snake gameplay with a 3D board, menu-driven interaction, sound integration, score saving, and multiple visual display options.
-
+![Demo]([https://raw.githubusercontent.com/username/repo-name/main/demo.gif](https://github.com/msaimnaveed2005/SnakeGame3D/edit/main/3DSnakeOOP2026-04-2116-59-46-ezgif.com-video-to-gif-converter)
 ## Features
 
 - 3D snake movement on a grid-based board
