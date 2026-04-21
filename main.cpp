@@ -97,6 +97,7 @@ int main()
 
                     if (!deathSoundPlayed && gameOverSoundLoaded)
                     {
+                        StopSound(gameOverSound);
                         PlaySound(gameOverSound);
                         deathSoundPlayed = true;
                     }
@@ -110,6 +111,7 @@ int main()
 
                     if (eatSoundLoaded)
                     {
+                        StopSound(eatSound);
                         PlaySound(eatSound);
                     }
 
