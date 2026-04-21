@@ -11,7 +11,8 @@ enum GameScreen
 {
     MENU,
     PLAYING,
-    SCOREBOARD
+    SCOREBOARD,
+    NAME_INPUT
 };
 
 enum CameraOrientation
@@ -20,17 +21,17 @@ enum CameraOrientation
     TOP_VIEW
 };
 
-void SaveScoreToFile(int score)
+void SaveScoreToFile(const string& playerName, int score)
 {
     ofstream file("scores.txt", ios::app);
     if (file.is_open())
     {
-        file << score << endl;
+        file << playerName << " " << score << endl;
         file.close();
     }
 }
 
-void LoadTopScores(int scores[], int& count)
+void LoadTopScores(string names[], int scores[], int& count)
 {
     count = 0;
 
@@ -40,7 +41,7 @@ void LoadTopScores(int scores[], int& count)
         return;
     }
 
-    while (count < 10 && file >> scores[count])
+    while (count < 10 && file >> names[count] >> scores[count])
     {
         count++;
     }
@@ -53,17 +54,21 @@ void LoadTopScores(int scores[], int& count)
         {
             if (scores[j] > scores[i])
             {
-                int temp = scores[i];
+                int tempScore = scores[i];
                 scores[i] = scores[j];
-                scores[j] = temp;
+                scores[j] = tempScore;
+
+                string tempName = names[i];
+                names[i] = names[j];
+                names[j] = tempName;
             }
         }
     }
 }
 
-void DrawBoard(int boardWidth, int boardHeight)
+void DrawBoard(int boardWidth, int boardHeight, bool modernLook)
 {
-    DrawPlane({ 0.0f, 0.0f, 0.0f }, { (float)boardWidth, (float)boardHeight }, DARKGRAY);
+    DrawPlane({ 0.0f, 0.0f, 0.0f }, { (float)boardWidth, (float)boardHeight }, modernLook ? Color{ 38, 38, 45, 255 } : DARKGRAY);
 
     float startX = -boardWidth / 2.0f;
     float startZ = -boardHeight / 2.0f;
@@ -71,13 +76,28 @@ void DrawBoard(int boardWidth, int boardHeight)
     for (int i = 0; i <= boardWidth; i++)
     {
         float x = startX + i;
-        DrawLine3D({ x, 0.01f, startZ }, { x, 0.01f, startZ + boardHeight }, GRAY);
+        DrawLine3D({ x, 0.01f, startZ }, { x, 0.01f, startZ + boardHeight }, modernLook ? Color{ 85, 85, 95, 255 } : GRAY);
     }
 
     for (int i = 0; i <= boardHeight; i++)
     {
         float z = startZ + i;
-        DrawLine3D({ startX, 0.01f, z }, { startX + boardWidth, 0.01f, z }, GRAY);
+        DrawLine3D({ startX, 0.01f, z }, { startX + boardWidth, 0.01f, z }, modernLook ? Color{ 85, 85, 95, 255 } : GRAY);
+    }
+
+    if (modernLook)
+    {
+        DrawCubeWires({ 0.0f, 0.6f, 0.0f }, (float)boardWidth, 1.2f, (float)boardHeight, Color{ 150, 150, 175, 255 });
+
+        float halfW = boardWidth / 2.0f;
+        float halfH = boardHeight / 2.0f;
+
+        DrawCube({ -halfW - 0.7f, 1.5f, -halfH - 0.7f }, 0.5f, 3.0f, 0.5f, Color{ 70, 70, 90, 255 });
+        DrawCube({ halfW + 0.7f, 1.5f, -halfH - 0.7f }, 0.5f, 3.0f, 0.5f, Color{ 70, 70, 90, 255 });
+        DrawCube({ -halfW - 0.7f, 1.5f,  halfH + 0.7f }, 0.5f, 3.0f, 0.5f, Color{ 70, 70, 90, 255 });
+        DrawCube({ halfW + 0.7f, 1.5f,  halfH + 0.7f }, 0.5f, 3.0f, 0.5f, Color{ 70, 70, 90, 255 });
+
+        DrawCube({ 0.0f, -0.35f, 0.0f }, (float)boardWidth + 1.0f, 0.2f, (float)boardHeight + 1.0f, Color{ 20, 20, 25, 255 });
     }
 }
 
@@ -91,7 +111,7 @@ void ApplyCameraOrientation(Camera3D& camera, CameraOrientation orientation)
         camera.fovy = 45.0f;
         camera.projection = CAMERA_PERSPECTIVE;
     }
-    else if (orientation == TOP_VIEW)
+    else
     {
         camera.position = { 0.0f, 32.0f, 8.0f };
         camera.target = { 0.0f, 0.0f, 0.0f };
@@ -103,7 +123,7 @@ void ApplyCameraOrientation(Camera3D& camera, CameraOrientation orientation)
 
 int main()
 {
-    srand(time(0));
+    srand((unsigned int)time(0));
 
     InitWindow(1000, 700, "3D Snake OOP");
     InitAudioDevice();
@@ -143,9 +163,13 @@ int main()
     int score = 0;
 
     GameScreen currentScreen = MENU;
-    int selectedOption = 0; // 0 = Play Game, 1 = Visual Style, 2 = Orientation, 3 = Scoreboard
+    int selectedOption = 0; // 0 Play, 1 Style, 2 Orientation, 3 Scoreboard
     bool modernLook = false;
 
+    string playerName = "";
+    string tempName = "";
+
+    string topNames[10];
     int topScores[10];
     int scoreCount = 0;
 
@@ -153,14 +177,12 @@ int main()
     {
         if (currentScreen == MENU)
         {
-            if (musicLoaded && !IsMusicStreamPlaying(bgMusic))
-            {
-                PlayMusicStream(bgMusic);
-                musicStopped = false;
-            }
-
             if (musicLoaded && !musicStopped)
             {
+                if (!IsMusicStreamPlaying(bgMusic))
+                {
+                    PlayMusicStream(bgMusic);
+                }
                 UpdateMusicStream(bgMusic);
             }
 
@@ -183,11 +205,7 @@ int main()
 
             if (selectedOption == 2 && (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_A) || IsKeyPressed(KEY_D)))
             {
-                if (orientation == DIAGONAL_VIEW)
-                    orientation = TOP_VIEW;
-                else
-                    orientation = DIAGONAL_VIEW;
-
+                orientation = (orientation == DIAGONAL_VIEW) ? TOP_VIEW : DIAGONAL_VIEW;
                 ApplyCameraOrientation(camera, orientation);
             }
 
@@ -195,18 +213,24 @@ int main()
             {
                 if (selectedOption == 0)
                 {
-                    snake.Reset();
-                    food.Reset(boardWidth, boardHeight, snake.GetBody());
-                    score = 0;
-                    gameOver = false;
-                    deathSoundPlayed = false;
-                    musicStopped = false;
-                    scoreSaved = false;
-                    moveDelay = baseSpeed;
-
-                    ApplyCameraOrientation(camera, orientation);
-
-                    currentScreen = PLAYING;
+                    if (playerName.empty())
+                    {
+                        tempName = "";
+                        currentScreen = NAME_INPUT;
+                    }
+                    else
+                    {
+                        snake.Reset();
+                        food.Reset(boardWidth, boardHeight, snake.GetBody());
+                        score = 0;
+                        gameOver = false;
+                        deathSoundPlayed = false;
+                        musicStopped = false;
+                        scoreSaved = false;
+                        moveDelay = baseSpeed;
+                        ApplyCameraOrientation(camera, orientation);
+                        currentScreen = PLAYING;
+                    }
                 }
                 else if (selectedOption == 1)
                 {
@@ -214,16 +238,12 @@ int main()
                 }
                 else if (selectedOption == 2)
                 {
-                    if (orientation == DIAGONAL_VIEW)
-                        orientation = TOP_VIEW;
-                    else
-                        orientation = DIAGONAL_VIEW;
-
+                    orientation = (orientation == DIAGONAL_VIEW) ? TOP_VIEW : DIAGONAL_VIEW;
                     ApplyCameraOrientation(camera, orientation);
                 }
                 else if (selectedOption == 3)
                 {
-                    LoadTopScores(topScores, scoreCount);
+                    LoadTopScores(topNames, topScores, scoreCount);
                     currentScreen = SCOREBOARD;
                 }
             }
@@ -244,9 +264,76 @@ int main()
             DrawText(TextFormat("Orientation: %s", orientation == DIAGONAL_VIEW ? "Diagonal" : "Top"), 340, 360, 30, orientColor);
             DrawText("Scoreboard", 400, 420, 30, scoreColor);
 
-            DrawText("Use UP / DOWN to move", 350, 510, 20, GRAY);
-            DrawText("Use LEFT / RIGHT or ENTER to change setting", 240, 540, 20, GRAY);
-            DrawText("Press ENTER on Play Game or Scoreboard", 260, 570, 20, GRAY);
+            if (!playerName.empty())
+            {
+                DrawText(TextFormat("Player: %s", playerName.c_str()), 380, 470, 24, LIGHTGRAY);
+            }
+
+            DrawText("Use UP / DOWN to move", 350, 520, 20, GRAY);
+            DrawText("Use LEFT / RIGHT or ENTER to change setting", 240, 550, 20, GRAY);
+            DrawText("Press ENTER on Play Game or Scoreboard", 260, 580, 20, GRAY);
+
+            EndDrawing();
+            continue;
+        }
+
+        if (currentScreen == NAME_INPUT)
+        {
+            if (musicLoaded && !musicStopped)
+            {
+                if (!IsMusicStreamPlaying(bgMusic))
+                {
+                    PlayMusicStream(bgMusic);
+                }
+                UpdateMusicStream(bgMusic);
+            }
+
+            int key = GetCharPressed();
+            while (key > 0)
+            {
+                if ((key >= 32) && (key <= 125) && tempName.length() < 18)
+                {
+                    tempName.push_back((char)key);
+                }
+                key = GetCharPressed();
+            }
+
+            if (IsKeyPressed(KEY_BACKSPACE) && !tempName.empty())
+            {
+                tempName.pop_back();
+            }
+
+            if (IsKeyPressed(KEY_ENTER) && !tempName.empty())
+            {
+                playerName = tempName;
+
+                snake.Reset();
+                food.Reset(boardWidth, boardHeight, snake.GetBody());
+                score = 0;
+                gameOver = false;
+                deathSoundPlayed = false;
+                musicStopped = false;
+                scoreSaved = false;
+                moveDelay = baseSpeed;
+                ApplyCameraOrientation(camera, orientation);
+
+                currentScreen = PLAYING;
+            }
+
+            if (IsKeyPressed(KEY_ESCAPE))
+            {
+                currentScreen = MENU;
+            }
+
+            BeginDrawing();
+            ClearBackground(Color{ 15, 15, 20, 255 });
+
+            DrawText("ENTER YOUR NAME", 315, 180, 35, WHITE);
+            DrawRectangleLines(250, 280, 500, 60, LIGHTGRAY);
+            DrawText(tempName.c_str(), 270, 295, 30, YELLOW);
+
+            DrawText("Press ENTER to continue", 350, 390, 20, GRAY);
+            DrawText("Press ESC to go back", 370, 420, 20, GRAY);
 
             EndDrawing();
             continue;
@@ -254,7 +341,16 @@ int main()
 
         if (currentScreen == SCOREBOARD)
         {
-            if (IsKeyPressed(KEY_BACKSPACE) || IsKeyPressed(KEY_ESCAPE))
+            if (musicLoaded && !musicStopped)
+            {
+                if (!IsMusicStreamPlaying(bgMusic))
+                {
+                    PlayMusicStream(bgMusic);
+                }
+                UpdateMusicStream(bgMusic);
+            }
+
+            if (IsKeyPressed(KEY_BACKSPACE))
             {
                 currentScreen = MENU;
             }
@@ -274,11 +370,11 @@ int main()
 
                 for (int i = 0; i < displayCount; i++)
                 {
-                    DrawText(TextFormat("%d. %d", i + 1, topScores[i]), 430, 170 + i * 45, 28, LIGHTGRAY);
+                    DrawText(TextFormat("%d. %s - %d", i + 1, topNames[i].c_str(), topScores[i]), 310, 170 + i * 45, 28, LIGHTGRAY);
                 }
             }
 
-            DrawText("Press ESC or BACKSPACE for Menu", 290, 600, 20, GRAY);
+            DrawText("Press BACKSPACE for Menu", 330, 600, 20, GRAY);
 
             EndDrawing();
             continue;
@@ -291,12 +387,17 @@ int main()
 
         if (gameOver && !scoreSaved)
         {
-            SaveScoreToFile(score);
+            SaveScoreToFile(playerName, score);
             scoreSaved = true;
         }
 
         if (gameOver && IsKeyPressed(KEY_R))
         {
+            if (gameOverSoundLoaded)
+            {
+                StopSound(gameOverSound);
+            }
+
             snake.Reset();
             food.Reset(boardWidth, boardHeight, snake.GetBody());
             score = 0;
@@ -310,21 +411,32 @@ int main()
 
             if (musicLoaded)
             {
-                PlayMusicStream(bgMusic);
+                if (!IsMusicStreamPlaying(bgMusic))
+                {
+                    PlayMusicStream(bgMusic);
+                }
             }
         }
 
         if (IsKeyPressed(KEY_M))
         {
+            if (gameOverSoundLoaded)
+            {
+                StopSound(gameOverSound);
+            }
+
             currentScreen = MENU;
             gameOver = false;
             deathSoundPlayed = false;
             musicStopped = false;
             scoreSaved = false;
 
-            if (musicLoaded && !IsMusicStreamPlaying(bgMusic))
+            if (musicLoaded)
             {
-                PlayMusicStream(bgMusic);
+                if (!IsMusicStreamPlaying(bgMusic))
+                {
+                    PlayMusicStream(bgMusic);
+                }
             }
         }
 
@@ -378,7 +490,6 @@ int main()
                     }
 
                     moveDelay = baseSpeed - (score * 0.002f);
-
                     if (moveDelay < 0.05f)
                     {
                         moveDelay = 0.05f;
@@ -388,20 +499,29 @@ int main()
         }
 
         BeginDrawing();
-        ClearBackground(modernLook ? Color{ 15, 15, 20, 255 } : BLACK);
+        ClearBackground(modernLook ? Color{ 12, 12, 18, 255 } : BLACK);
 
         BeginMode3D(camera);
 
-        DrawBoard(boardWidth, boardHeight);
+        DrawBoard(boardWidth, boardHeight, modernLook);
         snake.Draw(boardWidth, boardHeight, modernLook);
         food.Draw(boardWidth, boardHeight, modernLook);
 
+        if (modernLook)
+        {
+            DrawCube({ -12.0f, 2.0f, 0.0f }, 0.5f, 4.0f, 0.5f, Color{ 50, 70, 120, 255 });
+            DrawCube({ 12.0f, 2.0f, 0.0f }, 0.5f, 4.0f, 0.5f, Color{ 50, 70, 120, 255 });
+            DrawCube({ 0.0f, 2.0f, -12.0f }, 0.5f, 4.0f, 0.5f, Color{ 120, 60, 100, 255 });
+            DrawCube({ 0.0f, 2.0f,  12.0f }, 0.5f, 4.0f, 0.5f, Color{ 120, 60, 100, 255 });
+        }
+
         EndMode3D();
 
-        DrawText(TextFormat("Score: %d", score), 20, 20, 20, WHITE);
-        DrawText(modernLook ? "Style: Modern" : "Style: Plain", 20, 50, 20, LIGHTGRAY);
-        DrawText(orientation == DIAGONAL_VIEW ? "Orientation: Diagonal" : "Orientation: Top", 20, 80, 20, LIGHTGRAY);
-        DrawText("Press M for Menu", 20, 110, 20, GRAY);
+        DrawText(TextFormat("Player: %s", playerName.c_str()), 20, 20, 20, WHITE);
+        DrawText(TextFormat("Score: %d", score), 20, 50, 20, WHITE);
+        DrawText(modernLook ? "Style: Modern" : "Style: Plain", 20, 80, 20, LIGHTGRAY);
+        DrawText(orientation == DIAGONAL_VIEW ? "Orientation: Diagonal" : "Orientation: Top", 20, 110, 20, LIGHTGRAY);
+        DrawText("Press M for Menu", 20, 140, 20, GRAY);
 
         if (gameOver)
         {

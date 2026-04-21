@@ -66,11 +66,12 @@ void Food::Draw(int boardWidth, int boardHeight, bool premiumMode) const
     if (premiumMode)
     {
         float floatOffset = sin(animTime * 3.0f) * 0.2f;
-        float glowSize = 1.2f + sin(animTime * 4.0f) * 0.1f;
+        float glowSize = 1.25f + sin(animTime * 4.0f) * 0.12f;
 
-        DrawCube({ worldX, 0.05f, worldZ }, 1.0f, 0.1f, 1.0f, Color{ 0, 0, 0, 80 });
-        DrawCube({ worldX, 0.6f + floatOffset, worldZ }, glowSize, glowSize, glowSize, Color{ 255, 50, 50, 40 });
-        DrawCube({ worldX, 0.6f + floatOffset, worldZ }, 0.8f, 0.8f, 0.8f, RED);
+        DrawCube({ worldX, 0.05f, worldZ }, 1.0f, 0.1f, 1.0f, Color{ 0, 0, 0, 90 });
+        DrawCube({ worldX, 0.68f + floatOffset, worldZ }, glowSize, glowSize, glowSize, Color{ 255, 70, 70, 45 });
+        DrawCube({ worldX, 0.68f + floatOffset, worldZ }, 0.82f, 0.82f, 0.82f, RED);
+        DrawCubeWires({ worldX, 0.68f + floatOffset, worldZ }, 0.86f, 0.86f, 0.86f, Color{ 255, 220, 220, 255 });
     }
     else
     {
