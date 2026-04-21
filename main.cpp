@@ -88,6 +88,11 @@ int main()
                     gameOver = true;
                 }
 
+                if (snake.CheckSelfCollision())
+                {
+                    gameOver = true;
+                }
+
                 if (snake.GetX() == food.GetX() && snake.GetZ() == food.GetZ())
                 {
                     score = score + 10;

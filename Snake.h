@@ -26,6 +26,7 @@ public:
     float GetZ() const;
 
     bool CheckWallCollision(int width, int height) const;
+    bool CheckSelfCollision() const;
 
     void Draw(int boardWidth, int boardHeight) const;
 };

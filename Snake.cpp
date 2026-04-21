@@ -67,6 +67,19 @@ bool Snake::CheckWallCollision(int width, int height) const
     return false;
 }
 
+bool Snake::CheckSelfCollision() const
+{
+    for (int i = 1; i < body.size(); i++)
+    {
+        if (body[0].x == body[i].x && body[0].z == body[i].z)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void Snake::Draw(int boardWidth, int boardHeight) const
 {
     for (int i = 0; i < body.size(); i++)
