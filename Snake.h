@@ -10,51 +10,13 @@ private:
     int direction;
 
 public:
-    Snake()
-    {
-        x = 10.0f;
-        z = 10.0f;
-        direction = 0;
-    }
+    Snake();
 
-    void SetDirection(int newDirection)
-    {
-        if (newDirection == 4 && direction != 3)
-        {
-            direction = 4;
-        }
+    void SetDirection(int newDirection);
+    void Move();
 
-        if (newDirection == 3 && direction != 4)
-        {
-            direction = 3;
-        }
+    float GetX() const;
+    float GetZ() const;
 
-        if (newDirection == 1 && direction != 2)
-        {
-            direction = 1;
-        }
-
-        if (newDirection == 2 && direction != 1)
-        {
-            direction = 2;
-        }
-    }
-
-    void Move()
-    {
-        if (direction == 4) x = x + 1.0f;
-        if (direction == 3) x = x - 1.0f;
-        if (direction == 1) z = z - 1.0f;
-        if (direction == 2) z = z + 1.0f;
-    }
-
-    float GetX() const
-    {
-        return x;
-    }
-
-    float GetZ() const
-    {
-        return z;
-    }
+    void Draw() const;
 };

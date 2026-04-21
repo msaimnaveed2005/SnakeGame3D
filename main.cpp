@@ -56,7 +56,7 @@ int main()
         BeginMode3D(camera);
 
         DrawGrid(20, 1.0f);
-        DrawCube({ snake.GetX(), 0.5f, snake.GetZ() }, 1.0f, 1.0f, 1.0f, GREEN);
+        snake.Draw();
 
         EndMode3D();
 
