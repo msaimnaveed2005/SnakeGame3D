@@ -18,5 +18,7 @@ public:
     float GetX() const;
     float GetZ() const;
 
-    void Draw() const;
+    bool CheckWallCollision(int width, int height) const;
+
+    void Draw(int boardWidth, int boardHeight) const;
 };

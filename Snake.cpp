@@ -48,7 +48,20 @@ float Snake::GetZ() const
     return z;
 }
 
-void Snake::Draw() const
+bool Snake::CheckWallCollision(int width, int height) const
 {
-    DrawCube({ x, 0.5f, z }, 1.0f, 1.0f, 1.0f, GREEN);
+    if (x < 0 || x >= width || z < 0 || z >= height)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+void Snake::Draw(int boardWidth, int boardHeight) const
+{
+    float worldX = x - boardWidth / 2.0f + 0.5f;
+    float worldZ = z - boardHeight / 2.0f + 0.5f;
+
+    DrawCube({ worldX, 0.5f, worldZ }, 1.0f, 1.0f, 1.0f, GREEN);
 }
