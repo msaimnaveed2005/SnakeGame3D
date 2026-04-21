@@ -1,24 +1,22 @@
 #include "raylib.h"
 #include <string>
 #include "Snake.h"
+#include "Food.h"
 using namespace std;
 
 void DrawBoard(int boardWidth, int boardHeight)
 {
-    // Draw floor
     DrawPlane({ 0.0f, 0.0f, 0.0f }, { (float)boardWidth, (float)boardHeight }, DARKGRAY);
 
     float startX = -boardWidth / 2.0f;
     float startZ = -boardHeight / 2.0f;
 
-    // Vertical lines
     for (int i = 0; i <= boardWidth; i++)
     {
         float x = startX + i;
         DrawLine3D({ x, 0.01f, startZ }, { x, 0.01f, startZ + boardHeight }, GRAY);
     }
 
-    // Horizontal lines
     for (int i = 0; i <= boardHeight; i++)
     {
         float z = startZ + i;
@@ -42,6 +40,7 @@ int main()
     camera.projection = CAMERA_PERSPECTIVE;
 
     Snake snake;
+    Food food;
 
     float moveTimer = 0.0f;
     float moveDelay = 0.2f;
@@ -92,12 +91,12 @@ int main()
         BeginMode3D(camera);
 
         DrawBoard(boardWidth, boardHeight);
-
         snake.Draw(boardWidth, boardHeight);
+        food.Draw(boardWidth, boardHeight);
 
         EndMode3D();
 
-        DrawText("Snake class rendering", 20, 20, 20, WHITE);
+        DrawText("Food object added", 20, 20, 20, WHITE);
 
         if (gameOver)
         {
