@@ -1,4 +1,5 @@
 #include "Food.h"
+#include "Snake.h"
 #include <cstdlib>
 
 Food::Food()
@@ -23,10 +24,26 @@ void Food::SetPosition(float newX, float newZ)
     z = newZ;
 }
 
-void Food::Respawn(int boardWidth, int boardHeight)
+void Food::Respawn(int boardWidth, int boardHeight, const vector<Snake::Segment>& snakeBody)
 {
-    x = rand() % boardWidth;
-    z = rand() % boardHeight;
+    bool valid = false;
+
+    while (!valid)
+    {
+        valid = true;
+
+        x = rand() % boardWidth;
+        z = rand() % boardHeight;
+
+        for (int i = 0; i < snakeBody.size(); i++)
+        {
+            if (snakeBody[i].x == x && snakeBody[i].z == z)
+            {
+                valid = false;
+                break;
+            }
+        }
+    }
 }
 
 void Food::Draw(int boardWidth, int boardHeight) const

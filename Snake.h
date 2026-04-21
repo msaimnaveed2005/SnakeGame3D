@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "raylib.h"
 #include <vector>
 using namespace std;
@@ -24,6 +24,8 @@ public:
 
     float GetX() const;
     float GetZ() const;
+
+    const vector<Segment>& GetBody() const; // 🔥 NEW
 
     bool CheckWallCollision(int width, int height) const;
     bool CheckSelfCollision() const;

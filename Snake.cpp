@@ -97,3 +97,8 @@ void Snake::Draw(int boardWidth, int boardHeight) const
         }
     }
 }
+
+const vector<Snake::Segment>& Snake::GetBody() const
+{
+    return body;
+}

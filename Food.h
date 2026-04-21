@@ -1,5 +1,6 @@
 #pragma once
 #include "raylib.h"
+#include <vector>
 using namespace std;
 
 class Food
@@ -15,7 +16,8 @@ public:
     float GetZ() const;
 
     void SetPosition(float newX, float newZ);
-    void Respawn(int boardWidth, int boardHeight);
+
+    void Respawn(int boardWidth, int boardHeight, const vector<Snake::Segment>& snakeBody);
 
     void Draw(int boardWidth, int boardHeight) const;
 };

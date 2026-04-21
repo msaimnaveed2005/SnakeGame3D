@@ -97,7 +97,7 @@ int main()
                 {
                     score = score + 10;
                     snake.Grow();
-                    food.Respawn(boardWidth, boardHeight);
+                    food.Respawn(boardWidth, boardHeight, snake.GetBody());
                 }
             }
         }
