@@ -50,6 +50,7 @@ int main()
     float moveDelay = 0.2f;
 
     bool gameOver = false;
+    int score = 0;
 
     while (!WindowShouldClose())
     {
@@ -89,6 +90,7 @@ int main()
 
                 if (snake.GetX() == food.GetX() && snake.GetZ() == food.GetZ())
                 {
+                    score = score + 10;
                     food.Respawn(boardWidth, boardHeight);
                 }
             }
@@ -105,7 +107,7 @@ int main()
 
         EndMode3D();
 
-        DrawText("Random food respawn added", 20, 20, 20, WHITE);
+        DrawText(TextFormat("Score: %d", score), 20, 20, 20, WHITE);
 
         if (gameOver)
         {
