@@ -7,8 +7,15 @@ Food::Food()
     z = 5.0f;
 }
 
-float Food::GetX() const { return x; }
-float Food::GetZ() const { return z; }
+float Food::GetX() const
+{
+    return x;
+}
+
+float Food::GetZ() const
+{
+    return z;
+}
 
 void Food::SetPosition(float newX, float newZ)
 {
@@ -48,5 +55,7 @@ void Food::Draw(int boardWidth, int boardHeight) const
     float worldX = x - boardWidth / 2.0f + 0.5f;
     float worldZ = z - boardHeight / 2.0f + 0.5f;
 
-    DrawCube({ worldX, 0.5f, worldZ }, 1, 1, 1, RED);
+    DrawCube({ worldX, 0.05f, worldZ }, 1.0f, 0.1f, 1.0f, Color{ 0, 0, 0, 80 });
+    DrawCube({ worldX, 0.6f, worldZ }, 1.2f, 1.2f, 1.2f, Color{ 255, 50, 50, 40 });
+    DrawCube({ worldX, 0.6f, worldZ }, 0.8f, 0.8f, 0.8f, RED);
 }

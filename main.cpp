@@ -8,7 +8,7 @@ using namespace std;
 
 void DrawBoard(int boardWidth, int boardHeight)
 {
-    DrawPlane({ 0.0f, 0.0f, 0.0f }, { (float)boardWidth, (float)boardHeight }, DARKGRAY);
+    DrawPlane({ 0.0f, 0.0f, 0.0f }, { (float)boardWidth, (float)boardHeight }, Color{ 30, 30, 35, 255 });
 
     float startX = -boardWidth / 2.0f;
     float startZ = -boardHeight / 2.0f;
@@ -16,14 +16,16 @@ void DrawBoard(int boardWidth, int boardHeight)
     for (int i = 0; i <= boardWidth; i++)
     {
         float x = startX + i;
-        DrawLine3D({ x, 0.01f, startZ }, { x, 0.01f, startZ + boardHeight }, GRAY);
+        DrawLine3D({ x, 0.01f, startZ }, { x, 0.01f, startZ + boardHeight }, Color{ 60, 60, 70, 255 });
     }
 
     for (int i = 0; i <= boardHeight; i++)
     {
         float z = startZ + i;
-        DrawLine3D({ startX, 0.01f, z }, { startX + boardWidth, 0.01f, z }, GRAY);
+        DrawLine3D({ startX, 0.01f, z }, { startX + boardWidth, 0.01f, z }, Color{ 60, 60, 70, 255 });
     }
+
+    DrawCubeWires({ 0, 0.5f, 0 }, (float)boardWidth, 1.0f, (float)boardHeight, Color{ 120, 120, 140, 255 });
 }
 
 int main()
@@ -37,7 +39,7 @@ int main()
 
     Sound eatSound = LoadSound("eat.wav");
     Sound gameOverSound = LoadSound("gameover.wav");
-    Music bgMusic = LoadMusicStream("bgmusic2.mp3");
+    Music bgMusic = LoadMusicStream("bgmusic.mp3");
 
     SetSoundVolume(eatSound, 1.0f);
     SetSoundVolume(gameOverSound, 1.0f);
@@ -56,7 +58,7 @@ int main()
     const int boardHeight = 20;
 
     Camera3D camera = { 0 };
-    camera.position = { 0.0f, 18.0f, 18.0f };
+    camera.position = { 15.0f, 25.0f, 15.0f };
     camera.target = { 0.0f, 0.0f, 0.0f };
     camera.up = { 0.0f, 1.0f, 0.0f };
     camera.fovy = 45.0f;
@@ -76,7 +78,7 @@ int main()
 
     while (!WindowShouldClose())
     {
-        if (musicLoaded)
+        if (musicLoaded && !musicStopped)
         {
             UpdateMusicStream(bgMusic);
         }
@@ -152,7 +154,7 @@ int main()
         }
 
         BeginDrawing();
-        ClearBackground(BLACK);
+        ClearBackground(Color{ 15, 15, 20, 255 });
 
         BeginMode3D(camera);
 

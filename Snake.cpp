@@ -38,8 +38,15 @@ void Snake::Grow()
     body.push_back(body.back());
 }
 
-float Snake::GetX() const { return body[0].x; }
-float Snake::GetZ() const { return body[0].z; }
+float Snake::GetX() const
+{
+    return body[0].x;
+}
+
+float Snake::GetZ() const
+{
+    return body[0].z;
+}
 
 const vector<Snake::Segment>& Snake::GetBody() const
 {
@@ -68,9 +75,18 @@ void Snake::Draw(int boardWidth, int boardHeight) const
         float worldX = body[i].x - boardWidth / 2.0f + 0.5f;
         float worldZ = body[i].z - boardHeight / 2.0f + 0.5f;
 
+        DrawCube({ worldX, 0.05f, worldZ }, 1.0f, 0.1f, 1.0f, Color{ 0, 0, 0, 80 });
+
         if (i == 0)
-            DrawCube({ worldX, 0.5f, worldZ }, 1, 1, 1, GREEN);
+        {
+            DrawCube({ worldX, 0.6f, worldZ }, 1.0f, 1.0f, 1.0f, Color{ 0, 220, 120, 255 });
+        }
         else
-            DrawCube({ worldX, 0.5f, worldZ }, 0.9f, 0.9f, 0.9f, LIME);
+        {
+            int fade = 180 - i * 5;
+            if (fade < 80) fade = 80;
+
+            DrawCube({ worldX, 0.55f, worldZ }, 0.9f, 0.9f, 0.9f, Color{ 0, static_cast<unsigned char>(fade), 100, 255 });
+        }
     }
 }
