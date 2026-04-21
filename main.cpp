@@ -1,5 +1,7 @@
 #include "raylib.h"
 #include <string>
+#include <ctime>
+#include <cstdlib>
 #include "Snake.h"
 #include "Food.h"
 using namespace std;
@@ -26,6 +28,8 @@ void DrawBoard(int boardWidth, int boardHeight)
 
 int main()
 {
+    srand(time(0));
+
     InitWindow(1000, 700, "3D Snake OOP");
     SetTargetFPS(60);
 
@@ -82,6 +86,11 @@ int main()
                 {
                     gameOver = true;
                 }
+
+                if (snake.GetX() == food.GetX() && snake.GetZ() == food.GetZ())
+                {
+                    food.Respawn(boardWidth, boardHeight);
+                }
             }
         }
 
@@ -96,7 +105,7 @@ int main()
 
         EndMode3D();
 
-        DrawText("Food object added", 20, 20, 20, WHITE);
+        DrawText("Random food respawn added", 20, 20, 20, WHITE);
 
         if (gameOver)
         {

@@ -14,5 +14,8 @@ public:
     float GetX() const;
     float GetZ() const;
 
+    void SetPosition(float newX, float newZ);
+    void Respawn(int boardWidth, int boardHeight);
+
     void Draw(int boardWidth, int boardHeight) const;
 };

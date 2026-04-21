@@ -1,4 +1,5 @@
 #include "Food.h"
+#include <cstdlib>
 
 Food::Food()
 {
@@ -14,6 +15,18 @@ float Food::GetX() const
 float Food::GetZ() const
 {
     return z;
+}
+
+void Food::SetPosition(float newX, float newZ)
+{
+    x = newX;
+    z = newZ;
+}
+
+void Food::Respawn(int boardWidth, int boardHeight)
+{
+    x = rand() % boardWidth;
+    z = rand() % boardHeight;
 }
 
 void Food::Draw(int boardWidth, int boardHeight) const
