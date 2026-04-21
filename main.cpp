@@ -14,6 +14,12 @@ enum GameScreen
     SCOREBOARD
 };
 
+enum CameraOrientation
+{
+    DIAGONAL_VIEW,
+    TOP_VIEW
+};
+
 void SaveScoreToFile(int score)
 {
     ofstream file("scores.txt", ios::app);
@@ -75,6 +81,26 @@ void DrawBoard(int boardWidth, int boardHeight)
     }
 }
 
+void ApplyCameraOrientation(Camera3D& camera, CameraOrientation orientation)
+{
+    if (orientation == DIAGONAL_VIEW)
+    {
+        camera.position = { 15.0f, 25.0f, 15.0f };
+        camera.target = { 0.0f, 0.0f, 0.0f };
+        camera.up = { 0.0f, 1.0f, 0.0f };
+        camera.fovy = 45.0f;
+        camera.projection = CAMERA_PERSPECTIVE;
+    }
+    else if (orientation == TOP_VIEW)
+    {
+        camera.position = { 0.0f, 32.0f, 8.0f };
+        camera.target = { 0.0f, 0.0f, 0.0f };
+        camera.up = { 0.0f, 1.0f, 0.0f };
+        camera.fovy = 45.0f;
+        camera.projection = CAMERA_PERSPECTIVE;
+    }
+}
+
 int main()
 {
     srand(time(0));
@@ -100,11 +126,8 @@ int main()
     const int boardHeight = 20;
 
     Camera3D camera = { 0 };
-    camera.position = { 15.0f, 25.0f, 15.0f };
-    camera.target = { 0.0f, 0.0f, 0.0f };
-    camera.up = { 0.0f, 1.0f, 0.0f };
-    camera.fovy = 45.0f;
-    camera.projection = CAMERA_PERSPECTIVE;
+    CameraOrientation orientation = DIAGONAL_VIEW;
+    ApplyCameraOrientation(camera, orientation);
 
     Snake snake;
     Food food;
@@ -120,7 +143,7 @@ int main()
     int score = 0;
 
     GameScreen currentScreen = MENU;
-    int selectedOption = 0; // 0 = Play Game, 1 = Visual Style, 2 = Scoreboard
+    int selectedOption = 0; // 0 = Play Game, 1 = Visual Style, 2 = Orientation, 3 = Scoreboard
     bool modernLook = false;
 
     int topScores[10];
@@ -144,18 +167,28 @@ int main()
             if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W))
             {
                 selectedOption--;
-                if (selectedOption < 0) selectedOption = 2;
+                if (selectedOption < 0) selectedOption = 3;
             }
 
             if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S))
             {
                 selectedOption++;
-                if (selectedOption > 2) selectedOption = 0;
+                if (selectedOption > 3) selectedOption = 0;
             }
 
-            if ((selectedOption == 1) && (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_A) || IsKeyPressed(KEY_D)))
+            if (selectedOption == 1 && (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_A) || IsKeyPressed(KEY_D)))
             {
                 modernLook = !modernLook;
+            }
+
+            if (selectedOption == 2 && (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_A) || IsKeyPressed(KEY_D)))
+            {
+                if (orientation == DIAGONAL_VIEW)
+                    orientation = TOP_VIEW;
+                else
+                    orientation = DIAGONAL_VIEW;
+
+                ApplyCameraOrientation(camera, orientation);
             }
 
             if (IsKeyPressed(KEY_ENTER))
@@ -171,9 +204,24 @@ int main()
                     scoreSaved = false;
                     moveDelay = baseSpeed;
 
+                    ApplyCameraOrientation(camera, orientation);
+
                     currentScreen = PLAYING;
                 }
+                else if (selectedOption == 1)
+                {
+                    modernLook = !modernLook;
+                }
                 else if (selectedOption == 2)
+                {
+                    if (orientation == DIAGONAL_VIEW)
+                        orientation = TOP_VIEW;
+                    else
+                        orientation = DIAGONAL_VIEW;
+
+                    ApplyCameraOrientation(camera, orientation);
+                }
+                else if (selectedOption == 3)
                 {
                     LoadTopScores(topScores, scoreCount);
                     currentScreen = SCOREBOARD;
@@ -183,20 +231,22 @@ int main()
             BeginDrawing();
             ClearBackground(Color{ 15, 15, 20, 255 });
 
-            DrawText("3D SNAKE", 390, 120, 40, WHITE);
-            DrawText("Menu", 460, 180, 25, LIGHTGRAY);
+            DrawText("3D SNAKE", 390, 110, 40, WHITE);
+            DrawText("Menu", 460, 170, 25, LIGHTGRAY);
 
             Color playColor = (selectedOption == 0) ? YELLOW : WHITE;
             Color styleColor = (selectedOption == 1) ? YELLOW : WHITE;
-            Color scoreColor = (selectedOption == 2) ? YELLOW : WHITE;
+            Color orientColor = (selectedOption == 2) ? YELLOW : WHITE;
+            Color scoreColor = (selectedOption == 3) ? YELLOW : WHITE;
 
-            DrawText("Play Game", 415, 260, 30, playColor);
-            DrawText(TextFormat("Visual Style: %s", modernLook ? "Modern" : "Plain"), 320, 330, 30, styleColor);
-            DrawText("Scoreboard", 400, 400, 30, scoreColor);
+            DrawText("Play Game", 415, 240, 30, playColor);
+            DrawText(TextFormat("Visual Style: %s", modernLook ? "Modern" : "Plain"), 320, 300, 30, styleColor);
+            DrawText(TextFormat("Orientation: %s", orientation == DIAGONAL_VIEW ? "Diagonal" : "Top"), 340, 360, 30, orientColor);
+            DrawText("Scoreboard", 400, 420, 30, scoreColor);
 
-            DrawText("Use UP / DOWN to move", 350, 500, 20, GRAY);
-            DrawText("Use LEFT / RIGHT to change style", 300, 530, 20, GRAY);
-            DrawText("Press ENTER to select", 360, 560, 20, GRAY);
+            DrawText("Use UP / DOWN to move", 350, 510, 20, GRAY);
+            DrawText("Use LEFT / RIGHT or ENTER to change setting", 240, 540, 20, GRAY);
+            DrawText("Press ENTER on Play Game or Scoreboard", 260, 570, 20, GRAY);
 
             EndDrawing();
             continue;
@@ -255,6 +305,8 @@ int main()
             musicStopped = false;
             scoreSaved = false;
             moveDelay = baseSpeed;
+
+            ApplyCameraOrientation(camera, orientation);
 
             if (musicLoaded)
             {
@@ -348,7 +400,8 @@ int main()
 
         DrawText(TextFormat("Score: %d", score), 20, 20, 20, WHITE);
         DrawText(modernLook ? "Style: Modern" : "Style: Plain", 20, 50, 20, LIGHTGRAY);
-        DrawText("Press M for Menu", 20, 80, 20, GRAY);
+        DrawText(orientation == DIAGONAL_VIEW ? "Orientation: Diagonal" : "Orientation: Top", 20, 80, 20, LIGHTGRAY);
+        DrawText("Press M for Menu", 20, 110, 20, GRAY);
 
         if (gameOver)
         {
