@@ -1,12 +1,18 @@
 #pragma once
 #include "raylib.h"
+#include <vector>
 using namespace std;
 
 class Snake
 {
 private:
-    float x;
-    float z;
+    struct Segment
+    {
+        float x;
+        float z;
+    };
+
+    vector<Segment> body;
     int direction;
 
 public:
@@ -14,6 +20,7 @@ public:
 
     void SetDirection(int newDirection);
     void Move();
+    void Grow();
 
     float GetX() const;
     float GetZ() const;

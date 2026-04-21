@@ -91,6 +91,7 @@ int main()
                 if (snake.GetX() == food.GetX() && snake.GetZ() == food.GetZ())
                 {
                     score = score + 10;
+                    snake.Grow();
                     food.Respawn(boardWidth, boardHeight);
                 }
             }
