@@ -65,13 +65,15 @@ void Food::Draw(int boardWidth, int boardHeight, bool premiumMode) const
 
     if (premiumMode)
     {
-        float floatOffset = sin(animTime * 3.0f) * 0.2f;
-        float glowSize = 1.25f + sin(animTime * 4.0f) * 0.12f;
+        float floatOffset = sin(animTime * 3.0f) * 0.22f;
+        float glowSize = 1.28f + sin(animTime * 4.0f) * 0.13f;
+        float ringOffset = 0.82f + floatOffset;
 
-        DrawCube({ worldX, 0.05f, worldZ }, 1.0f, 0.1f, 1.0f, Color{ 0, 0, 0, 90 });
-        DrawCube({ worldX, 0.68f + floatOffset, worldZ }, glowSize, glowSize, glowSize, Color{ 255, 70, 70, 45 });
-        DrawCube({ worldX, 0.68f + floatOffset, worldZ }, 0.82f, 0.82f, 0.82f, RED);
-        DrawCubeWires({ worldX, 0.68f + floatOffset, worldZ }, 0.86f, 0.86f, 0.86f, Color{ 255, 220, 220, 255 });
+        DrawCube({ worldX, 0.05f, worldZ }, 1.0f, 0.1f, 1.0f, Color{ 0, 0, 0, 95 });
+        DrawCube({ worldX, ringOffset, worldZ }, glowSize, glowSize, glowSize, Color{ 255, 70, 70, 45 });
+        DrawCube({ worldX, ringOffset, worldZ }, 0.84f, 0.84f, 0.84f, RED);
+        DrawCubeWires({ worldX, ringOffset, worldZ }, 0.90f, 0.90f, 0.90f, Color{ 255, 220, 220, 255 });
+        DrawCube({ worldX, 1.18f + floatOffset, worldZ }, 0.25f, 0.08f, 0.25f, Color{ 255, 250, 180, 170 });
     }
     else
     {

@@ -102,7 +102,7 @@ void LoadTopScores(ScoreEntry entries[], int& count, int& highestScore)
 
 void DrawBoard(int boardWidth, int boardHeight, bool modernLook)
 {
-    DrawPlane({ 0.0f, 0.0f, 0.0f }, { (float)boardWidth, (float)boardHeight }, modernLook ? Color{ 38, 38, 45, 255 } : DARKGRAY);
+    DrawPlane({ 0.0f, 0.0f, 0.0f }, { (float)boardWidth, (float)boardHeight }, modernLook ? Color{ 36, 36, 44, 255 } : DARKGRAY);
 
     float startX = -boardWidth / 2.0f;
     float startZ = -boardHeight / 2.0f;
@@ -110,18 +110,18 @@ void DrawBoard(int boardWidth, int boardHeight, bool modernLook)
     for (int i = 0; i <= boardWidth; i++)
     {
         float x = startX + i;
-        DrawLine3D({ x, 0.01f, startZ }, { x, 0.01f, startZ + boardHeight }, modernLook ? Color{ 85, 85, 95, 255 } : GRAY);
+        DrawLine3D({ x, 0.01f, startZ }, { x, 0.01f, startZ + boardHeight }, modernLook ? Color{ 90, 90, 105, 255 } : GRAY);
     }
 
     for (int i = 0; i <= boardHeight; i++)
     {
         float z = startZ + i;
-        DrawLine3D({ startX, 0.01f, z }, { startX + boardWidth, 0.01f, z }, modernLook ? Color{ 85, 85, 95, 255 } : GRAY);
+        DrawLine3D({ startX, 0.01f, z }, { startX + boardWidth, 0.01f, z }, modernLook ? Color{ 90, 90, 105, 255 } : GRAY);
     }
 
     if (modernLook)
     {
-        DrawCubeWires({ 0.0f, 0.6f, 0.0f }, (float)boardWidth, 1.2f, (float)boardHeight, Color{ 150, 150, 175, 255 });
+        DrawCubeWires({ 0.0f, 0.6f, 0.0f }, (float)boardWidth, 1.2f, (float)boardHeight, Color{ 170, 170, 190, 255 });
 
         float halfW = boardWidth / 2.0f;
         float halfH = boardHeight / 2.0f;
@@ -131,12 +131,12 @@ void DrawBoard(int boardWidth, int boardHeight, bool modernLook)
         DrawCube({ -halfW - 0.7f, 1.5f,  halfH + 0.7f }, 0.5f, 3.0f, 0.5f, Color{ 70, 70, 90, 255 });
         DrawCube({ halfW + 0.7f, 1.5f,  halfH + 0.7f }, 0.5f, 3.0f, 0.5f, Color{ 70, 70, 90, 255 });
 
-        DrawCube({ 0.0f, -0.35f, 0.0f }, (float)boardWidth + 1.0f, 0.2f, (float)boardHeight + 1.0f, Color{ 20, 20, 25, 255 });
+        DrawCube({ 0.0f, -0.35f, 0.0f }, (float)boardWidth + 1.0f, 0.2f, (float)boardHeight + 1.0f, Color{ 20, 20, 28, 255 });
 
-        DrawCube({ -12.0f, 2.0f, 0.0f }, 0.5f, 4.0f, 0.5f, Color{ 50, 70, 120, 255 });
-        DrawCube({ 12.0f, 2.0f, 0.0f }, 0.5f, 4.0f, 0.5f, Color{ 50, 70, 120, 255 });
-        DrawCube({ 0.0f, 2.0f, -12.0f }, 0.5f, 4.0f, 0.5f, Color{ 120, 60, 100, 255 });
-        DrawCube({ 0.0f, 2.0f,  12.0f }, 0.5f, 4.0f, 0.5f, Color{ 120, 60, 100, 255 });
+        DrawCube({ -12.5f, 1.0f,  0.0f }, 0.25f, 2.0f, 24.0f, Color{ 40, 80, 160, 120 });
+        DrawCube({ 12.5f, 1.0f,  0.0f }, 0.25f, 2.0f, 24.0f, Color{ 40, 80, 160, 120 });
+        DrawCube({ 0.0f, 1.0f, -12.5f }, 24.0f, 2.0f, 0.25f, Color{ 180, 70, 130, 100 });
+        DrawCube({ 0.0f, 1.0f,  12.5f }, 24.0f, 2.0f, 0.25f, Color{ 180, 70, 130, 100 });
     }
 }
 
@@ -182,7 +182,7 @@ int main()
 
     Sound eatSound = LoadSound("eat.wav");
     Sound gameOverSound = LoadSound("gameover.wav");
-    Sound winSound = LoadSound("win.wav");
+    Sound winSound = LoadSound("win.mp3");
     Music bgMusic = LoadMusicStream("bgmusic.mp3");
 
     SetSoundVolume(eatSound, 1.0f);
@@ -215,11 +215,13 @@ int main()
     bool scoreSaved = false;
     int score = 0;
     int highestScore = 0;
+    int recordToBeat = 0;
+    bool newRecordAchievedThisRun = false;
 
     float newRecordEffectTimer = 0.0f;
 
     GameScreen currentScreen = MENU;
-    int selectedOption = 0; // 0 Play, 1 Style, 2 Orientation, 3 Scoreboard, 4 Change Name, 5 Exit
+    int selectedOption = 0;
     bool modernLook = false;
 
     string playerName = "";
@@ -229,6 +231,7 @@ int main()
     ScoreEntry topEntries[20];
     int scoreCount = 0;
     LoadTopScores(topEntries, scoreCount, highestScore);
+    recordToBeat = highestScore;
 
     bool shouldExit = false;
 
@@ -298,9 +301,12 @@ int main()
                         scoreSaved = false;
                         moveDelay = baseSpeed;
                         newRecordEffectTimer = 0.0f;
+                        newRecordAchievedThisRun = false;
+
+                        LoadTopScores(topEntries, scoreCount, highestScore);
+                        recordToBeat = highestScore;
 
                         ApplyCameraOrientation(camera, orientation);
-
                         currentScreen = PLAYING;
                     }
                 }
@@ -337,6 +343,11 @@ int main()
             if (!playerName.empty())
             {
                 DrawText(TextFormat("Player: %s", playerName.c_str()), 380, 560, 24, LIGHTGRAY);
+            }
+
+            if (!winSoundLoaded)
+            {
+                DrawText("win.wav not loaded", 20, 20, 20, RED);
             }
 
             DrawText("Use UP / DOWN to move", 350, 610, 18, GRAY);
@@ -387,8 +398,12 @@ int main()
                     scoreSaved = false;
                     moveDelay = baseSpeed;
                     newRecordEffectTimer = 0.0f;
-                    ApplyCameraOrientation(camera, orientation);
+                    newRecordAchievedThisRun = false;
 
+                    LoadTopScores(topEntries, scoreCount, highestScore);
+                    recordToBeat = highestScore;
+
+                    ApplyCameraOrientation(camera, orientation);
                     currentScreen = PLAYING;
                 }
                 else
@@ -495,6 +510,10 @@ int main()
             scoreSaved = false;
             moveDelay = baseSpeed;
             newRecordEffectTimer = 0.0f;
+            newRecordAchievedThisRun = false;
+
+            LoadTopScores(topEntries, scoreCount, highestScore);
+            recordToBeat = highestScore;
 
             ApplyCameraOrientation(camera, orientation);
 
@@ -520,6 +539,10 @@ int main()
             musicStopped = false;
             scoreSaved = false;
             newRecordEffectTimer = 0.0f;
+            newRecordAchievedThisRun = false;
+
+            LoadTopScores(topEntries, scoreCount, highestScore);
+            recordToBeat = highestScore;
 
             if (musicLoaded)
             {
@@ -579,17 +602,17 @@ int main()
                         PlaySound(eatSound);
                     }
 
-                    if (score > highestScore)
+                    if (!newRecordAchievedThisRun && score > recordToBeat)
                     {
+                        newRecordAchievedThisRun = true;
                         highestScore = score;
+                        newRecordEffectTimer = 2.5f;
 
                         if (winSoundLoaded)
                         {
                             StopSound(winSound);
                             PlaySound(winSound);
                         }
-
-                        newRecordEffectTimer = 2.5f;
                     }
 
                     moveDelay = baseSpeed - (score * 0.002f);
@@ -610,6 +633,16 @@ int main()
         snake.Draw(boardWidth, boardHeight, modernLook);
         food.Draw(boardWidth, boardHeight, modernLook);
 
+        if (modernLook)
+        {
+            float t = (float)GetTime();
+
+            DrawSphere({ -13.0f, 3.0f + sin(t * 1.2f) * 0.3f, -13.0f }, 0.25f, Color{ 80, 140, 255, 120 });
+            DrawSphere({ 13.0f, 3.0f + sin(t * 1.0f) * 0.3f, -13.0f }, 0.25f, Color{ 80, 255, 180, 120 });
+            DrawSphere({ -13.0f, 3.0f + sin(t * 1.4f) * 0.3f,  13.0f }, 0.25f, Color{ 255, 120, 180, 120 });
+            DrawSphere({ 13.0f, 3.0f + sin(t * 1.1f) * 0.3f,  13.0f }, 0.25f, Color{ 255, 220, 120, 120 });
+        }
+
         EndMode3D();
 
         DrawText(TextFormat("Player: %s", playerName.c_str()), 20, 20, 20, WHITE);
@@ -619,9 +652,14 @@ int main()
         DrawText(orientation == DIAGONAL_VIEW ? "Orientation: Diagonal" : "Orientation: Top", 20, 140, 20, LIGHTGRAY);
         DrawText("Press M for Menu", 20, 170, 20, GRAY);
 
+        if (!winSoundLoaded)
+        {
+            DrawText("win.wav not loaded", 20, 200, 20, RED);
+        }
+
         if (newRecordEffectTimer > 0.0f)
         {
-            unsigned char alpha = (unsigned char)(120 + 80 * sin(GetTime() * 8.0));
+            unsigned char alpha = (unsigned char)(140 + 80 * sin(GetTime() * 8.0));
             DrawRectangle(250, 210, 500, 80, Color{ 255, 215, 0, 35 });
             DrawRectangleLinesEx({ 250, 210, 500, 80 }, 3.0f, Color{ 255, 215, 0, alpha });
             DrawText("NEW HIGH SCORE!", 325, 232, 36, GOLD);

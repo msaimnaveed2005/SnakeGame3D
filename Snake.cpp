@@ -77,19 +77,20 @@ void Snake::Draw(int boardWidth, int boardHeight, bool premiumMode) const
 
         if (premiumMode)
         {
-            DrawCube({ worldX, 0.05f, worldZ }, 1.0f, 0.1f, 1.0f, Color{ 0, 0, 0, 90 });
+            DrawCube({ worldX, 0.05f, worldZ }, 1.0f, 0.1f, 1.0f, Color{ 0, 0, 0, 95 });
 
             if (i == 0)
             {
-                DrawCube({ worldX, 0.65f, worldZ }, 1.0f, 1.1f, 1.0f, Color{ 0, 230, 130, 255 });
-                DrawCubeWires({ worldX, 0.65f, worldZ }, 1.02f, 1.12f, 1.02f, Color{ 180, 255, 220, 255 });
+                DrawCube({ worldX, 0.68f, worldZ }, 1.05f, 1.15f, 1.05f, Color{ 0, 235, 135, 255 });
+                DrawCubeWires({ worldX, 0.68f, worldZ }, 1.08f, 1.18f, 1.08f, Color{ 200, 255, 225, 255 });
+                DrawCube({ worldX, 1.18f, worldZ }, 0.35f, 0.10f, 0.35f, Color{ 160, 255, 210, 160 });
             }
             else
             {
-                int fade = 180 - i * 5;
-                if (fade < 80) fade = 80;
+                int fade = 185 - i * 5;
+                if (fade < 85) fade = 85;
 
-                DrawCube({ worldX, 0.58f, worldZ }, 0.9f, 0.95f, 0.9f, Color{ 0, (unsigned char)fade, 110, 255 });
+                DrawCube({ worldX, 0.60f, worldZ }, 0.92f, 1.0f, 0.92f, Color{ 0, (unsigned char)fade, 120, 255 });
             }
         }
         else
