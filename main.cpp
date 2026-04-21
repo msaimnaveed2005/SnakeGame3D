@@ -54,48 +54,35 @@ int main()
 
     while (!WindowShouldClose())
     {
+        // Restart
+        if (gameOver && IsKeyPressed(KEY_R))
+        {
+            snake.Reset();
+            food.Reset(boardWidth, boardHeight, snake.GetBody());
+            score = 0;
+            gameOver = false;
+        }
+
         if (!gameOver)
         {
-            if (IsKeyPressed(KEY_RIGHT))
-            {
-                snake.SetDirection(4);
-            }
+            if (IsKeyPressed(KEY_RIGHT)) snake.SetDirection(4);
+            if (IsKeyPressed(KEY_LEFT))  snake.SetDirection(3);
+            if (IsKeyPressed(KEY_UP))    snake.SetDirection(1);
+            if (IsKeyPressed(KEY_DOWN))  snake.SetDirection(2);
 
-            if (IsKeyPressed(KEY_LEFT))
-            {
-                snake.SetDirection(3);
-            }
-
-            if (IsKeyPressed(KEY_UP))
-            {
-                snake.SetDirection(1);
-            }
-
-            if (IsKeyPressed(KEY_DOWN))
-            {
-                snake.SetDirection(2);
-            }
-
-            moveTimer = moveTimer + GetFrameTime();
+            moveTimer += GetFrameTime();
 
             if (moveTimer >= moveDelay)
             {
                 snake.Move();
                 moveTimer = 0.0f;
 
-                if (snake.CheckWallCollision(boardWidth, boardHeight))
-                {
-                    gameOver = true;
-                }
-
-                if (snake.CheckSelfCollision())
-                {
-                    gameOver = true;
-                }
+                if (snake.CheckWallCollision(boardWidth, boardHeight)) gameOver = true;
+                if (snake.CheckSelfCollision()) gameOver = true;
 
                 if (snake.GetX() == food.GetX() && snake.GetZ() == food.GetZ())
                 {
-                    score = score + 10;
+                    score += 10;
                     snake.Grow();
                     food.Respawn(boardWidth, boardHeight, snake.GetBody());
                 }
@@ -117,7 +104,8 @@ int main()
 
         if (gameOver)
         {
-            DrawText("GAME OVER", 380, 320, 40, RED);
+            DrawText("GAME OVER", 380, 300, 40, RED);
+            DrawText("Press R to Restart", 350, 350, 20, WHITE);
         }
 
         EndDrawing();

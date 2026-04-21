@@ -1,5 +1,4 @@
 #include "Food.h"
-#include "Snake.h"
 #include <cstdlib>
 
 Food::Food()
@@ -8,15 +7,8 @@ Food::Food()
     z = 5.0f;
 }
 
-float Food::GetX() const
-{
-    return x;
-}
-
-float Food::GetZ() const
-{
-    return z;
-}
+float Food::GetX() const { return x; }
+float Food::GetZ() const { return z; }
 
 void Food::SetPosition(float newX, float newZ)
 {
@@ -46,10 +38,15 @@ void Food::Respawn(int boardWidth, int boardHeight, const vector<Snake::Segment>
     }
 }
 
+void Food::Reset(int boardWidth, int boardHeight, const vector<Snake::Segment>& snakeBody)
+{
+    Respawn(boardWidth, boardHeight, snakeBody);
+}
+
 void Food::Draw(int boardWidth, int boardHeight) const
 {
     float worldX = x - boardWidth / 2.0f + 0.5f;
     float worldZ = z - boardHeight / 2.0f + 0.5f;
 
-    DrawCube({ worldX, 0.5f, worldZ }, 1.0f, 1.0f, 1.0f, RED);
+    DrawCube({ worldX, 0.5f, worldZ }, 1, 1, 1, RED);
 }

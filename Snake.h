@@ -5,18 +5,21 @@ using namespace std;
 
 class Snake
 {
-private:
+public:
     struct Segment
     {
         float x;
         float z;
     };
 
+private:
     vector<Segment> body;
     int direction;
 
 public:
     Snake();
+
+    void Reset();
 
     void SetDirection(int newDirection);
     void Move();
@@ -25,7 +28,7 @@ public:
     float GetX() const;
     float GetZ() const;
 
-    const vector<Segment>& GetBody() const; // 🔥 NEW
+    const vector<Segment>& GetBody() const;
 
     bool CheckWallCollision(int width, int height) const;
     bool CheckSelfCollision() const;
