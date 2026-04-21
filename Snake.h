@@ -33,5 +33,5 @@ public:
     bool CheckWallCollision(int width, int height) const;
     bool CheckSelfCollision() const;
 
-    void Draw(int boardWidth, int boardHeight) const;
+    void Draw(int boardWidth, int boardHeight, bool premiumMode) const;
 };
