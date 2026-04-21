@@ -71,6 +71,7 @@ int main()
 
     bool gameOver = false;
     bool deathSoundPlayed = false;
+    bool musicStopped = false;
     int score = 0;
 
     while (!WindowShouldClose())
@@ -88,6 +89,12 @@ int main()
             gameOver = false;
             deathSoundPlayed = false;
             moveDelay = baseSpeed;
+
+            if (musicLoaded)
+            {
+                PlayMusicStream(bgMusic);
+                musicStopped = false;
+            }
         }
 
         if (!gameOver)
@@ -113,6 +120,12 @@ int main()
                         StopSound(gameOverSound);
                         PlaySound(gameOverSound);
                         deathSoundPlayed = true;
+                    }
+
+                    if (!musicStopped && musicLoaded)
+                    {
+                        StopMusicStream(bgMusic);
+                        musicStopped = true;
                     }
                 }
 
