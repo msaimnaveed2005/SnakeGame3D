@@ -36,7 +36,7 @@ void Food::Respawn(int boardWidth, int boardHeight, const vector<Snake::Segment>
         x = rand() % boardWidth;
         z = rand() % boardHeight;
 
-        for (int i = 0; i < snakeBody.size(); i++)
+        for (int i = 0; i < (int)snakeBody.size(); i++)
         {
             if (snakeBody[i].x == x && snakeBody[i].z == z)
             {

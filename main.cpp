@@ -2,6 +2,7 @@
 #include <string>
 #include <ctime>
 #include <cstdlib>
+#include <fstream>
 #include "Snake.h"
 #include "Food.h"
 using namespace std;
@@ -9,50 +10,68 @@ using namespace std;
 enum GameScreen
 {
     MENU,
-    PLAYING
+    PLAYING,
+    SCOREBOARD
 };
 
-void DrawBoard(int boardWidth, int boardHeight, bool premiumMode)
+void SaveScoreToFile(int score)
 {
-    if (premiumMode)
+    ofstream file("scores.txt", ios::app);
+    if (file.is_open())
     {
-        DrawPlane({ 0.0f, 0.0f, 0.0f }, { (float)boardWidth, (float)boardHeight }, Color{ 30, 30, 35, 255 });
-
-        float startX = -boardWidth / 2.0f;
-        float startZ = -boardHeight / 2.0f;
-
-        for (int i = 0; i <= boardWidth; i++)
-        {
-            float x = startX + i;
-            DrawLine3D({ x, 0.01f, startZ }, { x, 0.01f, startZ + boardHeight }, Color{ 60, 60, 70, 255 });
-        }
-
-        for (int i = 0; i <= boardHeight; i++)
-        {
-            float z = startZ + i;
-            DrawLine3D({ startX, 0.01f, z }, { startX + boardWidth, 0.01f, z }, Color{ 60, 60, 70, 255 });
-        }
-
-        DrawCubeWires({ 0, 0.5f, 0 }, (float)boardWidth, 1.0f, (float)boardHeight, Color{ 120, 120, 140, 255 });
+        file << score << endl;
+        file.close();
     }
-    else
+}
+
+void LoadTopScores(int scores[], int& count)
+{
+    count = 0;
+
+    ifstream file("scores.txt");
+    if (!file.is_open())
     {
-        DrawPlane({ 0.0f, 0.0f, 0.0f }, { (float)boardWidth, (float)boardHeight }, DARKGRAY);
+        return;
+    }
 
-        float startX = -boardWidth / 2.0f;
-        float startZ = -boardHeight / 2.0f;
+    while (count < 10 && file >> scores[count])
+    {
+        count++;
+    }
 
-        for (int i = 0; i <= boardWidth; i++)
+    file.close();
+
+    for (int i = 0; i < count - 1; i++)
+    {
+        for (int j = i + 1; j < count; j++)
         {
-            float x = startX + i;
-            DrawLine3D({ x, 0.01f, startZ }, { x, 0.01f, startZ + boardHeight }, GRAY);
+            if (scores[j] > scores[i])
+            {
+                int temp = scores[i];
+                scores[i] = scores[j];
+                scores[j] = temp;
+            }
         }
+    }
+}
 
-        for (int i = 0; i <= boardHeight; i++)
-        {
-            float z = startZ + i;
-            DrawLine3D({ startX, 0.01f, z }, { startX + boardWidth, 0.01f, z }, GRAY);
-        }
+void DrawBoard(int boardWidth, int boardHeight)
+{
+    DrawPlane({ 0.0f, 0.0f, 0.0f }, { (float)boardWidth, (float)boardHeight }, DARKGRAY);
+
+    float startX = -boardWidth / 2.0f;
+    float startZ = -boardHeight / 2.0f;
+
+    for (int i = 0; i <= boardWidth; i++)
+    {
+        float x = startX + i;
+        DrawLine3D({ x, 0.01f, startZ }, { x, 0.01f, startZ + boardHeight }, GRAY);
+    }
+
+    for (int i = 0; i <= boardHeight; i++)
+    {
+        float z = startZ + i;
+        DrawLine3D({ startX, 0.01f, z }, { startX + boardWidth, 0.01f, z }, GRAY);
     }
 }
 
@@ -97,11 +116,15 @@ int main()
     bool gameOver = false;
     bool deathSoundPlayed = false;
     bool musicStopped = false;
+    bool scoreSaved = false;
     int score = 0;
 
     GameScreen currentScreen = MENU;
-    int selectedOption = 0; // 0 = Simple, 1 = Premium
-    bool premiumMode = false;
+    int selectedOption = 0; // 0 = Play Game, 1 = Visual Style, 2 = Scoreboard
+    bool modernLook = false;
+
+    int topScores[10];
+    int scoreCount = 0;
 
     while (!WindowShouldClose())
     {
@@ -120,56 +143,92 @@ int main()
 
             if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W))
             {
-                selectedOption = 0;
+                selectedOption--;
+                if (selectedOption < 0) selectedOption = 2;
             }
 
             if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S))
             {
-                selectedOption = 1;
+                selectedOption++;
+                if (selectedOption > 2) selectedOption = 0;
+            }
+
+            if ((selectedOption == 1) && (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_A) || IsKeyPressed(KEY_D)))
+            {
+                modernLook = !modernLook;
             }
 
             if (IsKeyPressed(KEY_ENTER))
             {
-                premiumMode = (selectedOption == 1);
+                if (selectedOption == 0)
+                {
+                    snake.Reset();
+                    food.Reset(boardWidth, boardHeight, snake.GetBody());
+                    score = 0;
+                    gameOver = false;
+                    deathSoundPlayed = false;
+                    musicStopped = false;
+                    scoreSaved = false;
+                    moveDelay = baseSpeed;
 
-                snake.Reset();
-                food.Reset(boardWidth, boardHeight, snake.GetBody());
-                score = 0;
-                gameOver = false;
-                deathSoundPlayed = false;
-                moveDelay = baseSpeed;
-
-                currentScreen = PLAYING;
+                    currentScreen = PLAYING;
+                }
+                else if (selectedOption == 2)
+                {
+                    LoadTopScores(topScores, scoreCount);
+                    currentScreen = SCOREBOARD;
+                }
             }
 
             BeginDrawing();
             ClearBackground(Color{ 15, 15, 20, 255 });
 
-            DrawText("3D SNAKE", 390, 130, 40, WHITE);
-            DrawText("Choose Game Mode", 350, 200, 25, LIGHTGRAY);
+            DrawText("3D SNAKE", 390, 120, 40, WHITE);
+            DrawText("Menu", 460, 180, 25, LIGHTGRAY);
 
-            Color simpleColor = (selectedOption == 0) ? YELLOW : WHITE;
-            Color premiumColor = (selectedOption == 1) ? YELLOW : WHITE;
+            Color playColor = (selectedOption == 0) ? YELLOW : WHITE;
+            Color styleColor = (selectedOption == 1) ? YELLOW : WHITE;
+            Color scoreColor = (selectedOption == 2) ? YELLOW : WHITE;
 
-            DrawText("Simple Mode", 400, 280, 30, simpleColor);
-            DrawText("Premium Mode", 390, 340, 30, premiumColor);
+            DrawText("Play Game", 415, 260, 30, playColor);
+            DrawText(TextFormat("Visual Style: %s", modernLook ? "Modern" : "Plain"), 320, 330, 30, styleColor);
+            DrawText("Scoreboard", 400, 400, 30, scoreColor);
 
-            DrawText("Use UP / DOWN and press ENTER", 300, 430, 20, GRAY);
+            DrawText("Use UP / DOWN to move", 350, 500, 20, GRAY);
+            DrawText("Use LEFT / RIGHT to change style", 300, 530, 20, GRAY);
+            DrawText("Press ENTER to select", 360, 560, 20, GRAY);
 
-            if (!eatSoundLoaded)
+            EndDrawing();
+            continue;
+        }
+
+        if (currentScreen == SCOREBOARD)
+        {
+            if (IsKeyPressed(KEY_BACKSPACE) || IsKeyPressed(KEY_ESCAPE))
             {
-                DrawText("eat.wav not loaded", 20, 20, 20, RED);
+                currentScreen = MENU;
             }
 
-            if (!gameOverSoundLoaded)
+            BeginDrawing();
+            ClearBackground(Color{ 15, 15, 20, 255 });
+
+            DrawText("SCOREBOARD", 360, 80, 40, WHITE);
+
+            if (scoreCount == 0)
             {
-                DrawText("gameover.wav not loaded", 20, 50, 20, RED);
+                DrawText("No scores yet", 410, 180, 25, GRAY);
+            }
+            else
+            {
+                int displayCount = (scoreCount > 5) ? 5 : scoreCount;
+
+                for (int i = 0; i < displayCount; i++)
+                {
+                    DrawText(TextFormat("%d. %d", i + 1, topScores[i]), 430, 170 + i * 45, 28, LIGHTGRAY);
+                }
             }
 
-            if (!musicLoaded)
-            {
-                DrawText("bgmusic.mp3 not loaded", 20, 80, 20, RED);
-            }
+            DrawText("Press ESC or BACKSPACE for Menu", 290, 600, 20, GRAY);
 
             EndDrawing();
             continue;
@@ -180,6 +239,12 @@ int main()
             UpdateMusicStream(bgMusic);
         }
 
+        if (gameOver && !scoreSaved)
+        {
+            SaveScoreToFile(score);
+            scoreSaved = true;
+        }
+
         if (gameOver && IsKeyPressed(KEY_R))
         {
             snake.Reset();
@@ -187,12 +252,13 @@ int main()
             score = 0;
             gameOver = false;
             deathSoundPlayed = false;
+            musicStopped = false;
+            scoreSaved = false;
             moveDelay = baseSpeed;
 
             if (musicLoaded)
             {
                 PlayMusicStream(bgMusic);
-                musicStopped = false;
             }
         }
 
@@ -201,17 +267,18 @@ int main()
             currentScreen = MENU;
             gameOver = false;
             deathSoundPlayed = false;
+            musicStopped = false;
+            scoreSaved = false;
 
             if (musicLoaded && !IsMusicStreamPlaying(bgMusic))
             {
                 PlayMusicStream(bgMusic);
-                musicStopped = false;
             }
         }
 
         if (!gameOver)
         {
-            if (premiumMode)
+            if (modernLook)
             {
                 food.Update();
             }
@@ -269,34 +336,19 @@ int main()
         }
 
         BeginDrawing();
-        ClearBackground(premiumMode ? Color{ 15, 15, 20, 255 } : BLACK);
+        ClearBackground(modernLook ? Color{ 15, 15, 20, 255 } : BLACK);
 
         BeginMode3D(camera);
 
-        DrawBoard(boardWidth, boardHeight, premiumMode);
-        snake.Draw(boardWidth, boardHeight, premiumMode);
-        food.Draw(boardWidth, boardHeight, premiumMode);
+        DrawBoard(boardWidth, boardHeight);
+        snake.Draw(boardWidth, boardHeight, modernLook);
+        food.Draw(boardWidth, boardHeight, modernLook);
 
         EndMode3D();
 
         DrawText(TextFormat("Score: %d", score), 20, 20, 20, WHITE);
-        DrawText(premiumMode ? "Mode: Premium" : "Mode: Simple", 20, 50, 20, LIGHTGRAY);
+        DrawText(modernLook ? "Style: Modern" : "Style: Plain", 20, 50, 20, LIGHTGRAY);
         DrawText("Press M for Menu", 20, 80, 20, GRAY);
-
-        if (!eatSoundLoaded)
-        {
-            DrawText("eat.wav not loaded", 20, 110, 20, RED);
-        }
-
-        if (!gameOverSoundLoaded)
-        {
-            DrawText("gameover.wav not loaded", 20, 140, 20, RED);
-        }
-
-        if (!musicLoaded)
-        {
-            DrawText("bgmusic.mp3 not loaded", 20, 170, 20, RED);
-        }
 
         if (gameOver)
         {

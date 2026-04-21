@@ -22,7 +22,7 @@ void Snake::SetDirection(int newDirection)
 
 void Snake::Move()
 {
-    for (int i = body.size() - 1; i > 0; i--)
+    for (int i = (int)body.size() - 1; i > 0; i--)
     {
         body[i] = body[i - 1];
     }
@@ -60,7 +60,7 @@ bool Snake::CheckWallCollision(int width, int height) const
 
 bool Snake::CheckSelfCollision() const
 {
-    for (int i = 1; i < body.size(); i++)
+    for (int i = 1; i < (int)body.size(); i++)
     {
         if (body[0].x == body[i].x && body[0].z == body[i].z)
             return true;
@@ -70,7 +70,7 @@ bool Snake::CheckSelfCollision() const
 
 void Snake::Draw(int boardWidth, int boardHeight, bool premiumMode) const
 {
-    for (int i = 0; i < body.size(); i++)
+    for (int i = 0; i < (int)body.size(); i++)
     {
         float worldX = body[i].x - boardWidth / 2.0f + 0.5f;
         float worldZ = body[i].z - boardHeight / 2.0f + 0.5f;
@@ -88,7 +88,7 @@ void Snake::Draw(int boardWidth, int boardHeight, bool premiumMode) const
                 int fade = 180 - i * 5;
                 if (fade < 80) fade = 80;
 
-                DrawCube({ worldX, 0.55f, worldZ }, 0.9f, 0.9f, 0.9f, Color{ 0, static_cast<unsigned char>(fade), 100, 255 });
+                DrawCube({ worldX, 0.55f, worldZ }, 0.9f, 0.9f, 0.9f, Color{ 0, (unsigned char)fade, 100, 255 });
             }
         }
         else
