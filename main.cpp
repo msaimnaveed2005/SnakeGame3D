@@ -31,7 +31,18 @@ int main()
     srand(time(0));
 
     InitWindow(1000, 700, "3D Snake OOP");
+    InitAudioDevice();
+    SetMasterVolume(1.0f);
     SetTargetFPS(60);
+
+    Sound eatSound = LoadSound("eat.wav");
+    Sound gameOverSound = LoadSound("gameover.wav");
+
+    SetSoundVolume(eatSound, 1.0f);
+    SetSoundVolume(gameOverSound, 1.0f);
+
+    bool eatSoundLoaded = IsSoundValid(eatSound);
+    bool gameOverSoundLoaded = IsSoundValid(gameOverSound);
 
     const int boardWidth = 20;
     const int boardHeight = 20;
@@ -51,17 +62,19 @@ int main()
     float moveDelay = baseSpeed;
 
     bool gameOver = false;
+    bool deathSoundPlayed = false;
     int score = 0;
 
     while (!WindowShouldClose())
     {
-        // Restart
         if (gameOver && IsKeyPressed(KEY_R))
         {
             snake.Reset();
             food.Reset(boardWidth, boardHeight, snake.GetBody());
             score = 0;
             gameOver = false;
+            deathSoundPlayed = false;
+            moveDelay = baseSpeed;
         }
 
         if (!gameOver)
@@ -78,16 +91,28 @@ int main()
                 snake.Move();
                 moveTimer = 0.0f;
 
-                if (snake.CheckWallCollision(boardWidth, boardHeight)) gameOver = true;
-                if (snake.CheckSelfCollision()) gameOver = true;
+                if (snake.CheckWallCollision(boardWidth, boardHeight) || snake.CheckSelfCollision())
+                {
+                    gameOver = true;
 
-                if (snake.GetX() == food.GetX() && snake.GetZ() == food.GetZ())
+                    if (!deathSoundPlayed && gameOverSoundLoaded)
+                    {
+                        PlaySound(gameOverSound);
+                        deathSoundPlayed = true;
+                    }
+                }
+
+                if (!gameOver && snake.GetX() == food.GetX() && snake.GetZ() == food.GetZ())
                 {
                     score += 10;
                     snake.Grow();
                     food.Respawn(boardWidth, boardHeight, snake.GetBody());
 
-                    // Increase speed
+                    if (eatSoundLoaded)
+                    {
+                        PlaySound(eatSound);
+                    }
+
                     moveDelay = baseSpeed - (score * 0.002f);
 
                     if (moveDelay < 0.05f)
@@ -111,6 +136,16 @@ int main()
 
         DrawText(TextFormat("Score: %d", score), 20, 20, 20, WHITE);
 
+        if (!eatSoundLoaded)
+        {
+            DrawText("eat.wav not loaded", 20, 50, 20, RED);
+        }
+
+        if (!gameOverSoundLoaded)
+        {
+            DrawText("gameover.wav not loaded", 20, 80, 20, RED);
+        }
+
         if (gameOver)
         {
             DrawText("GAME OVER", 380, 300, 40, RED);
@@ -120,6 +155,10 @@ int main()
         EndDrawing();
     }
 
+    if (eatSoundLoaded) UnloadSound(eatSound);
+    if (gameOverSoundLoaded) UnloadSound(gameOverSound);
+
+    CloseAudioDevice();
     CloseWindow();
     return 0;
 }
