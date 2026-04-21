@@ -157,7 +157,10 @@ int main()
         ClearBackground(Color{ 15, 15, 20, 255 });
 
         BeginMode3D(camera);
-
+        if (!gameOver)
+        {
+            food.Update();
+        }
         DrawBoard(boardWidth, boardHeight);
         snake.Draw(boardWidth, boardHeight);
         food.Draw(boardWidth, boardHeight);

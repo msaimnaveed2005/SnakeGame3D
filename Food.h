@@ -10,6 +10,8 @@ private:
     float x;
     float z;
 
+    float animTime; // NEW
+
 public:
     Food();
 
@@ -21,5 +23,6 @@ public:
     void Respawn(int boardWidth, int boardHeight, const vector<Snake::Segment>& snakeBody);
     void Reset(int boardWidth, int boardHeight, const vector<Snake::Segment>& snakeBody);
 
+    void Update(); // NEW
     void Draw(int boardWidth, int boardHeight) const;
 };
