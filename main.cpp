@@ -37,12 +37,20 @@ int main()
 
     Sound eatSound = LoadSound("eat.wav");
     Sound gameOverSound = LoadSound("gameover.wav");
+    Music bgMusic = LoadMusicStream("bgmusic2.mp3");
 
     SetSoundVolume(eatSound, 1.0f);
     SetSoundVolume(gameOverSound, 1.0f);
+    SetMusicVolume(bgMusic, 0.4f);
 
     bool eatSoundLoaded = IsSoundValid(eatSound);
     bool gameOverSoundLoaded = IsSoundValid(gameOverSound);
+    bool musicLoaded = IsMusicValid(bgMusic);
+
+    if (musicLoaded)
+    {
+        PlayMusicStream(bgMusic);
+    }
 
     const int boardWidth = 20;
     const int boardHeight = 20;
@@ -67,6 +75,11 @@ int main()
 
     while (!WindowShouldClose())
     {
+        if (musicLoaded)
+        {
+            UpdateMusicStream(bgMusic);
+        }
+
         if (gameOver && IsKeyPressed(KEY_R))
         {
             snake.Reset();
@@ -148,6 +161,11 @@ int main()
             DrawText("gameover.wav not loaded", 20, 80, 20, RED);
         }
 
+        if (!musicLoaded)
+        {
+            DrawText("bgmusic.mp3 not loaded", 20, 110, 20, RED);
+        }
+
         if (gameOver)
         {
             DrawText("GAME OVER", 380, 300, 40, RED);
@@ -159,6 +177,7 @@ int main()
 
     if (eatSoundLoaded) UnloadSound(eatSound);
     if (gameOverSoundLoaded) UnloadSound(gameOverSound);
+    if (musicLoaded) UnloadMusicStream(bgMusic);
 
     CloseAudioDevice();
     CloseWindow();
