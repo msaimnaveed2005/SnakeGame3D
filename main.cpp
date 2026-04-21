@@ -47,7 +47,8 @@ int main()
     Food food;
 
     float moveTimer = 0.0f;
-    float moveDelay = 0.2f;
+    float baseSpeed = 0.2f;
+    float moveDelay = baseSpeed;
 
     bool gameOver = false;
     int score = 0;
@@ -85,6 +86,14 @@ int main()
                     score += 10;
                     snake.Grow();
                     food.Respawn(boardWidth, boardHeight, snake.GetBody());
+
+                    // Increase speed
+                    moveDelay = baseSpeed - (score * 0.002f);
+
+                    if (moveDelay < 0.05f)
+                    {
+                        moveDelay = 0.05f;
+                    }
                 }
             }
         }
